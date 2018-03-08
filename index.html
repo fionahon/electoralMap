@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>US Election Data</title> 
+   
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script src="http://d3js.org/topojson.v1.min.js"></script>
+  </head>
+  <header>
+      <h1 style="font-family: sans-serif;">US Presidential Elections from 1940 - 2016</h1>
+  </header>
+  <section>
+    <div class="timeline"></div>
+  </section>
+  <style>
+      .state-names {
+          font-family: sans-serif;
+          text-align: middle;
+          fill: black;
+          pointer-events: all;
+      }
+      .states {
+        stroke: black;
+        stroke-width: 3px;
+        fill: none;
+        pointer-events: all
+      }
+      .states :hover{
+        opacity: 0.5;
+      }
+      /*From studio 5*/
+      div.tooltip {
+        position: absolute;
+        pointer-events: none;
+        text-align: center;
+        width: 200px;
+        height: 50px;
+        padding: 10px;
+        font: 12px sans-serif;
+        background: lightgrey;
+        border: 1px;
+        stroke: black;
+        border-radius: 5px;
+        opacity: .9;
+      }
+      .timeline {
+        stroke: black;
+        stroke-width: 2px;
+      }
+  </style>
+  <body>
+    <svg>
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/FDR_1944_Color_Portrait.tif/lossy-page1-832px-FDR_1944_Color_Portrait.tif.jpg" width="70" height="100" x= 1000 y="100">
+    </svg>
+    <svg width="2000" height="70">
+      <rect width="100" height="20" x="10" y="0" style="fill: #00193E ; stroke-width: 3; stroke: rgb(0,0,0)"/>
+      <text x="12" y="40" fill="black" font-family="sans-serif">-60.0 to -50.0</text>      
+      <rect width="100" height="20" x="110" y="0" style="fill: #033989 ; stroke-width: 3; stroke: rgb(0,0,0)"/>
+      <text x="112" y="40" fill="black" font-family="sans-serif">-50.0 to -40.0</text>      
+      <rect width="100" height="20" x="210" y="0" style="fill: #225197 ; stroke-width: 3; stroke: rgb(0,0,0)"/>
+      <text x="212" y="40" fill="black" font-family="sans-serif">-40.0 to -30.0</text>      
+      <rect width="100" height="20" x="310" y="0" style="fill: #456BA4 ; stroke-width: 3; stroke: rgb(0,0,0)"/>
+      <text x="312" y="40" fill="black" font-family="sans-serif">-30.0 to -20.0</text> 
+      <rect width="100" height="20" x="410" y="0" style="fill: #819EC9 ; stroke-width: 3; stroke: rgb(0,0,0)"/>
+      <text x="412" y="40" fill="black" font-family="sans-serif">-20.0 to -10.0</text> 
+      <rect width="100" height="20" x="510" y="0" style="fill: #C8D8F0 ; stroke-width: 3; stroke: rgb(0,0,0)"/>
+      <text x="512" y="40" fill="black" font-family="sans-serif">-10.0 to 0.0</text> 
+      <rect width="100" height="20" x="610" y="0" style="fill: #ECB1B1 ; stroke-width: 3; stroke: rgb(0,0,0)"/>
+      <text x="612" y="40" fill="black" font-family="sans-serif">0.0 to 10.0</text> 
+      <rect width="100" height="20" x="710" y="0" style="fill: #ED7979 ; stroke-width: 3; stroke: rgb(0,0,0)"/>
+      <text x="712" y="40" fill="black" font-family="sans-serif">10.0 to 20.0</text> 
+      <rect width="100" height="20" x="810" y="0" style="fill: #EB5151 ; stroke-width: 3; stroke: rgb(0,0,0)"/>
+      <text x="812" y="40" fill="black" font-family="sans-serif">20.0 to 30.0</text> 
+      <rect width="100" height="20" x="910" y="0" style="fill: #D42727 ; stroke-width: 3; stroke: rgb(0,0,0)"/>
+      <text x="912" y="40" fill="black" font-family="sans-serif">30.0 to 40.0</text> 
+      <rect width="100" height="20" x="1010" y="0" style="fill: #A50E0E ; stroke-width: 3; stroke: rgb(0,0,0)"/>
+      <text x="1012" y="40" fill="black" font-family="sans-serif">40.0 to 50.0</text> 
+      <rect width="100" height="20" x="1110" y="0" style="fill: #760101 ; stroke-width: 3; stroke: rgb(0,0,0)"/>
+      <text x="1112" y="40" fill="black" font-family="sans-serif">50.0 to 60.0</text> 
+    </svg>
+      <script>
+        var width = 1300;
+        var height = 1000;
+        
+        var timelineWidth = width;
+        var timelineHeight = 100;
+        var timelineYears = [];
+        for (var i = 1940; i <= 2016; i + 4) {
+          timelineYears.push(i);
+        }
+
+        var drawTimeline = d3.select(".timeline")
+                                .append("svg")
+                                .attr("width", timelineWidth)
+                                .attr("height", timelineHeight);
+
+
+        var timelineAxis = drawTimeline.append("line")
+                                      .attr("class", "timeline")
+                                      .attr({
+                                        "x1": 10,
+                                        "y1": 40,
+                                        "x2": 1200,
+                                        "y2": 40
+                                      });
+
+          // Referenced Mike Bostock's exanple on bl.ocks
+          var projection = d3.geo.albersUsa()
+              .scale(1500)
+              .translate([600 , height / 3]);
+
+          var path = d3.geo.path()
+                          .projection(projection);
+
+          var svg = d3.select("body")
+                      .append("svg")
+                      .attr({
+                        width: width,
+                        height: height
+                      });
+
+          // Tooltip code from Piazza
+          var tooltip = d3.select("body")
+                          .append("div")
+                          .attr("class", "tooltip");
+          
+          var stateNames = [];
+          var stateInfo = [];
+          var winner = [];
+
+          d3.json("us.json", function(electionMap) {
+            var data = topojson.feature(electionMap, electionMap.objects.states).features;
+            d3.csv("/data/election-results-1940.csv", function(electionData) {
+              d3.tsv("us-state-names.tsv", function(genStateInfo) {
+                d3.csv("/data/yearwise-winner.csv", function(yearwiseWinner) {
+                  yearwiseWinner.forEach(function(d, i) {
+                    winner.push({'year' : yearwiseWinner[i].YEAR,
+                                  'party' : yearwiseWinner[i].PARTY})
+                    // console.log(winner);
+                  });
+                  genStateInfo.forEach(function(d, i) {
+                    stateInfo.push({'id' : genStateInfo[i].id, 
+                                    'code' : genStateInfo[i].code});
+                  });
+                  // console.log(stateInfo); // Correct
+                  electionData.forEach(function(d, i) {
+                    for (var j = 0; j < stateInfo.length; j++) {
+                      if (electionData[i].Abbreviation == stateInfo[j].code) {
+                        stateInfo[j].State = electionData[i].State;
+                        stateInfo[j].Total_EV = electionData[i].Total_EV;
+                        stateInfo[j].D_Nominee = electionData[i].D_Nominee;
+                        stateInfo[j].D_Percentage = electionData[i].D_Percentage;
+                        stateInfo[j].D_Votes = electionData[i].D_Votes;
+                        stateInfo[j].R_Nominee = electionData[i].R_Nominee;
+                        stateInfo[j].R_Percentage = electionData[i].R_Percentage;
+                        stateInfo[j].R_Votes = electionData[i].R_Votes;
+                        stateInfo[j].Year = electionData[i].Year;
+                      }
+                    }
+                    // console.log(stateInfo);
+                  });
+
+                  svg.append("g")
+                    .attr("class", "states")
+                    .selectAll("path")
+                    .data(data)
+                    .enter()
+                    .append("path")
+                    .attr({
+                      "d": path,
+                    })
+                    .attr("fill", function(data) {
+                      var demNomPercent;
+                      var repNomPercent;
+                      var delta;
+                      for (var i = 0; i < stateInfo.length; i++) {
+                        if (stateInfo[i].id == data.id) {
+                          demNomPercent = stateInfo[i].D_Percentage;
+                          repNomPercent = stateInfo[i].R_Percentage;
+                          delta = repNomPercent - demNomPercent;
+                          if (delta < -50) {
+                            return "#00193E";
+                          } else if ((delta > -50) && (delta < -40)) {
+                            return "#033989";
+                          } else if ((delta > -40) && (delta < -30)) {
+                            return "#225197";
+                          } else if ((delta > -30) && (delta < -20)) {
+                            return "#456BA4";
+                          } else if ((delta > -20) && (delta < -10)) {
+                            return "#819EC9";
+                          } else if ((delta > -10) && (delta < 0)) {
+                            return "#C8D8F0";
+                          } else if ((delta > 0) && (delta < 10)) {
+                            return "#ECB1B1";
+                          } else if ((delta > 10) && (delta < 20)) {
+                            return "#ED7979";
+                          } else if ((delta > 20) && (delta < 30)) {
+                            return "#EB5151";
+                          } else if ((delta > 30) && (delta < 40)) {
+                            return "#D42727";
+                          } else if ((delta > 40) && (delta < 50)) {
+                            return "#A50E0E";
+                          } else {
+                            return "#760101";
+                          }
+                        }
+                      }
+                    })
+
+                    // Tooltip reference from Piazza
+                    .on("mousemove", function(data) {
+                      // console.log("data id " + data.id);
+                      var tooltipState;
+                      var tooltipEV;
+                      var toolTipDemNom;
+                      var toolTipDemNomNum;
+                      var toolTipDemNomPercent;
+                      var toolTipRepNom;
+                      var toolTipRepNomNum;
+                      var toolTipRepNomPercent;
+
+                      for (var i = 0; i < stateInfo.length; i++) {
+                        if (stateInfo[i].id == data.id) {
+                          tooltipState = stateInfo[i].State;
+                          tooltipEV = stateInfo[i].Total_EV;
+                          toolTipDemNom = stateInfo[i].D_Nominee;
+                          toolTipDemNomNum = stateInfo[i].D_Votes;
+                          toolTipDemNomPercent = stateInfo[i].D_Percentage;
+                          toolTipRepNom = stateInfo[i].R_Nominee;
+                          toolTipRepNomNum = stateInfo[i].R_Votes;
+                          toolTipRepNomPercent = stateInfo[i].R_Percentage;
+                        }
+                      }
+
+                      tooltip.html(tooltipState + "\n" + "Electoral Votes: " + tooltipEV + "\n" + toolTipDemNom + ": " + toolTipDemNomNum + "(" + toolTipDemNomPercent + "%)" + "\n" + toolTipRepNom + ": " + toolTipRepNomNum + "(" + toolTipRepNomPercent + "%)")
+                            .style("left", (d3.event.pageX) + "px")     
+                            .style("top", (d3.event.pageY ) + "px")
+                            .style("opacity", .9); 
+                    })
+                    .on("mouseout", function(d) {           
+                        tooltip.style("opacity", 0);    
+                    });
+                    
+                   svg.append("g")
+                    .attr("class", "state-names")
+                    .selectAll("text")
+                    .data(data)
+                    .enter()
+                    .append("text")
+                    .text(function(d, i){
+                      return stateNames[d.id];
+                    })
+
+                    // centroid from bl.ocks
+                    .attr("x", function(d){
+                      return path.centroid(d)[0];
+                    })
+                    .attr("y", function(d){
+                      return  path.centroid(d)[1];
+                    });
+                  });
+                });
+            }); 
+          });
+      </script>
+    </body>
+</html>
